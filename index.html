@@ -52,6 +52,8 @@ header.top { display: flex; flex-wrap: wrap; align-items: center; justify-conten
 .brand h1 .dot { color: var(--accent); }
 .head-acts { display: flex; align-items: center; gap: 10px; }
 .who { font-size: 12px; color: var(--muted); font-family: var(--f-mono); }
+.foot { display: flex; justify-content: center; align-items: center; gap: 4px; margin-top: 40px; padding-top: 16px; border-top: 1px dashed var(--line); }
+.foot .btn-ghost { font-size: 12px; font-weight: 600; }
 .btn-add { background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 999px; padding: 12px 20px; font-weight: 800; font-size: 15px; }
 .btn-add:disabled { opacity: .5; cursor: wait; }
 .btn-ghost { background: none; border: 0; color: var(--muted); font-size: 13px; font-weight: 700; padding: 8px; border-radius: 8px; }
@@ -179,8 +181,6 @@ header.top { display: flex; flex-wrap: wrap; align-items: center; justify-conten
   <header class="top">
     <div class="brand"><small>노는법 마케팅팀</small><h1>레퍼런스 창고<span class="dot">.</span></h1></div>
     <div class="head-acts">
-      <span class="who" id="who"></span>
-      <button class="btn-ghost" id="logoutBtn" type="button">로그아웃</button>
       <button class="btn-add" id="addBtn" type="button">+ 추가</button>
     </div>
   </header>
@@ -196,6 +196,7 @@ header.top { display: flex; flex-wrap: wrap; align-items: center; justify-conten
 
   <div id="status" hidden></div>
   <section id="list" class="grid" aria-live="polite"></section>
+  <footer class="foot"><span class="who" id="who"></span><button class="btn-ghost" id="logoutBtn" type="button">로그아웃</button></footer>
 </div>
 
 <!-- 레퍼런스 입력 -->
