@@ -397,6 +397,7 @@ async function loadAll() {
   S.loaded = true;
   if (r.error) showStatus(explain(r.error), r.error.message); else showStatus(null);
   render();
+  takeShared();
 }
 
 /* ===== 그리기 ===== */
@@ -593,6 +594,22 @@ $("refForm").addEventListener("submit", async e => {
   } catch (err) { formErr(explain(err)); console.error(err); }
   finally { btn.disabled = false; btn.textContent = "저장"; }
 });
+
+/* ===== 공유로 들어온 링크 (?url= / ?text=) — 인스타 공유 버튼, 아이폰 단축어, 안드로이드 공유 대상 ===== */
+function takeShared() {
+  const p = new URLSearchParams(location.search);
+  const raw = [p.get("url"), p.get("text"), p.get("title")].filter(Boolean).join(" ");
+  if (!raw) return;
+  try { history.replaceState(null, "", location.pathname); } catch {}
+  const m = raw.match(/https?:\/\/[^\s"'<>]+/);
+  let url = m ? m[0] : "";
+  try { const u = new URL(url); if (/instagram\.com$/.test(u.hostname.replace(/^www\./, "")) || u.hostname.endsWith("instagram.com")) { u.search = ""; url = u.toString(); } } catch {}
+  openRefForm(null);
+  if (url) { $("f-url").value = url; $("f-url").dispatchEvent(new Event("input")); }
+  const note = raw.replace(m ? m[0] : "", "").trim();
+  if (note && !$("f-copy").value) $("f-copy").value = note;
+  setTimeout(() => $("f-title").focus(), 60);
+}
 
 /* ===== 이벤트 ===== */
 function closeSheets() { $("refSheet").hidden = true; editing = null; pendingBlob = null; }
