@@ -87,6 +87,9 @@ header.top { display: flex; flex-wrap: wrap; align-items: center; justify-conten
 .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .thumb .ph { font-family: var(--f-display); font-size: 26px; color: var(--cat); text-align: center; padding: 0 16px; line-height: 1.15; }
 .thumb.short { aspect-ratio: 16 / 7; }
+a.thumb { text-decoration: none; cursor: pointer; }
+.thumb .go { position: absolute; right: 10px; bottom: 10px; width: 30px; height: 30px; border-radius: 999px; display: grid; place-items: center; background: color-mix(in srgb, var(--ink) 55%, transparent); color: #fff; font-size: 15px; font-weight: 800; }
+a.thumb:hover img { filter: brightness(.92); }
 .label { position: absolute; top: 10px; left: 10px; background: var(--cat); color: #fff; font-size: 12px; font-weight: 800; padding: 4px 9px; border-radius: 6px; letter-spacing: .02em; }
 .plat { position: absolute; top: 10px; right: 10px; background: var(--surface); color: var(--ink); font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px; border: 1px solid var(--line); }
 .body { padding: 14px 16px 16px; display: grid; gap: 10px; min-width: 0; }
@@ -483,9 +486,10 @@ function refCard(r) {
     ...freeTags(r).map(t => el("span", {}, "#" + t)),
   ];
   return el("article", { class: "card", style: `--cat:${c.color}` },
-    el("div", { class: "thumb" + (r.imageUrl ? "" : " short") },
+    el(r.url ? "a" : "div", { class: "thumb" + (r.imageUrl ? "" : " short"), href: r.url || undefined, target: r.url ? "_blank" : undefined, rel: r.url ? "noopener" : undefined, "aria-label": r.url ? "원본 열기" : undefined },
       r.imageUrl ? el("img", { src: r.imageUrl, alt: "", loading: "lazy" }) : el("div", { class: "ph" }, fmt || c.name),
-      el("span", { class: "label" }, c.name), fmt ? el("span", { class: "plat" }, fmt) : null),
+      el("span", { class: "label" }, c.name), fmt ? el("span", { class: "plat" }, fmt) : null,
+      r.url ? el("span", { class: "go" }, "↗") : null),
     el("div", { class: "body" },
       el("h3", {}, r.title || "(제목 없음)"),
       (r.source || r.period) ? el("div", { class: "src" }, [r.source, r.period ? `게재 ${r.period}` : ""].filter(Boolean).join(" · ")) : null,
@@ -496,7 +500,6 @@ function refCard(r) {
       el("div", { class: "meta" },
         el("div", { class: "by" }, el("span", {}, shortName(r.author) || "—"), el("time", {}, fmtDate(r.created_at))),
         el("div", { class: "acts" },
-          r.url ? el("a", { href: r.url, target: "_blank", rel: "noopener" }, "원본 ↗") : null,
           el("button", { type: "button", onclick: () => openRefForm(r) }, "수정"), del))));
 }
 
