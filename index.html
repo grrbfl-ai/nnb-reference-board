@@ -563,9 +563,13 @@ async function autoThumb(url) {
   if (pendingAuto) { pendingBlob = null; pendingAuto = false; setPreview(null); }
   $("dropMsg").textContent = "링크에서 사진 찾는 중…";
   try {
-    const { data, error } = await sb.functions.invoke("thumb", { body: { url } });
+    const { data: { session } } = await sb.auth.getSession();
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/thumb`, { method: "POST",
+      headers: { "Content-Type": "application/json", apikey: SUPABASE_KEY, Authorization: `Bearer ${session?.access_token || ""}` },
+      body: JSON.stringify({ url }) });
+    const data = res.ok ? await res.blob() : null;
     if (autoFor !== url || hasOwnImage() || $("refSheet").hidden) return;
-    if (error || !(data instanceof Blob) || !data.type.startsWith("image/")) throw error || new Error("no image");
+    if (!data || !data.type.startsWith("image/")) throw new Error("no image " + res.status);
     pendingBlob = new File([data], "thumb", { type: data.type }); pendingAuto = true; keepImage = false;
     setPreview(URL.createObjectURL(pendingBlob));
     $("dropMsg").textContent = "링크에서 가져온 사진이에요. 캡처를 넣으면 바뀌어요";
