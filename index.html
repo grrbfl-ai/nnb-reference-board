@@ -146,6 +146,7 @@ header.top { display: flex; flex-wrap: wrap; align-items: center; justify-conten
 .taggroups { display: grid; gap: 12px; background: var(--bg); border-radius: 12px; padding: 12px; }
 .taggroups .field > span { font-size: 12px; }
 .taggroups .chip { background: var(--surface); }
+.taggroups .chip[aria-pressed="true"] { background: var(--cat); border-color: var(--cat); color: #fff; }
 .drop { border: 1.5px dashed var(--line); border-radius: 10px; padding: 14px; text-align: center; color: var(--muted); font-size: 13px; display: grid; gap: 8px; justify-items: center; }
 .drop.over { border-color: var(--accent); color: var(--ink); }
 .drop img { max-height: 160px; border-radius: 8px; }
