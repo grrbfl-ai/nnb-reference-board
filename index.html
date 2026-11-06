@@ -546,17 +546,43 @@ function openRefForm(r) {
   $("f-tags").value = r ? freeTags(r).join(", ") : "";
   $("f-why").value = r?.why || ""; $("f-idea").value = r?.idea || ""; $("f-copy").value = r?.copy_text || "";
   resetFormSel(r); renderCatPick(); renderFormGroups(); setPreview(r?.imageUrl || null);
+  pendingAuto = false; autoFor = ""; clearTimeout(autoTimer);
   $("refErr").hidden = true; $("refSheet").hidden = false;
+  if (r?.url && !r.imageUrl) autoThumb(r.url);
   setTimeout(() => (r ? $("f-title") : $("f-url")).focus(), 30);
 }
-function takeImage(file) { if (!file || !file.type.startsWith("image/")) return; pendingBlob = file; setPreview(URL.createObjectURL(file)); }
+function takeImage(file) { if (!file || !file.type.startsWith("image/")) return; pendingBlob = file; pendingAuto = false; setPreview(URL.createObjectURL(file)); }
+
+/* 링크 넣으면 대표 이미지 자동으로 (Supabase 함수 thumb) — 직접 넣은 캡처가 있으면 건드리지 않음 */
+let pendingAuto = false, autoFor = "", autoTimer = null;
+const hasOwnImage = () => (pendingBlob && !pendingAuto) || (editing && keepImage && editing.image_path);
+async function autoThumb(url) {
+  url = (url || "").trim();
+  if (!/^https?:\/\/\S+\.\S+/.test(url) || url === autoFor || hasOwnImage()) return;
+  autoFor = url;
+  if (pendingAuto) { pendingBlob = null; pendingAuto = false; setPreview(null); }
+  $("dropMsg").textContent = "링크에서 사진 찾는 중…";
+  try {
+    const { data, error } = await sb.functions.invoke("thumb", { body: { url } });
+    if (autoFor !== url || hasOwnImage() || $("refSheet").hidden) return;
+    if (error || !(data instanceof Blob) || !data.type.startsWith("image/")) throw error || new Error("no image");
+    pendingBlob = new File([data], "thumb", { type: data.type }); pendingAuto = true; keepImage = false;
+    setPreview(URL.createObjectURL(pendingBlob));
+    $("dropMsg").textContent = "링크에서 가져온 사진이에요. 캡처를 넣으면 바뀌어요";
+  } catch (err) {
+    if (autoFor !== url || hasOwnImage()) return;
+    if (!pendingBlob) $("dropMsg").textContent = "링크에서 사진을 못 가져왔어요. 캡처를 붙여넣거나 끌어다 놓아 주세요";
+    console.warn("thumb", err);
+  }
+}
 $("f-url").addEventListener("input", e => {
   const f = guessFormat(e.target.value);
   if (!editing && f && !formSel.format.size) { formSel.format.add(f); renderFormGroups(); }
+  clearTimeout(autoTimer); autoTimer = setTimeout(() => autoThumb(e.target.value), 600);
 });
 $("pickImg").addEventListener("click", () => $("f-file").click());
 $("f-file").addEventListener("change", e => { takeImage(e.target.files[0]); e.target.value = ""; });
-$("clearImg").addEventListener("click", () => { pendingBlob = null; keepImage = false; setPreview(null); });
+$("clearImg").addEventListener("click", () => { pendingBlob = null; pendingAuto = false; keepImage = false; setPreview(null); });
 $("refForm").addEventListener("paste", e => {
   const item = [...(e.clipboardData?.items || [])].find(i => i.type.startsWith("image/"));
   if (item) { e.preventDefault(); takeImage(item.getAsFile()); }
